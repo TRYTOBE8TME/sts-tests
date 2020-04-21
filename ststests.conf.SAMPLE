@@ -1,0 +1,53 @@
+[DEFAULT]
+## this section is just used as default for all the "s3 *"
+## sections, you can place these variables also directly there
+
+## replace with e.g. "localhost" to run against local software
+host = localhost
+
+## uncomment the port to use something other than 80
+port = 8000
+
+## say "no" to disable TLS
+is_secure = no
+
+[fixtures]
+## all the buckets created will start with this prefix;
+## {random} will be filled with random characters to pad
+## the prefix to 30 characters long, and avoid collisions
+bucket prefix = yournamehere-{random}-
+
+[sts]
+
+# take user_idname set in vstart.sh
+user_id = 56789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234
+
+# take AWS access key set in vstart.sh
+access_key = NOPQRSTUVWXYZABCDEFG
+
+# take AWS secret key set in vstart.sh
+secret_key = nopqrstuvwxyzabcdefghijklmnabcdefghijklm
+
+[iam]
+
+# take user_idname set in vstart.sh
+user_id = 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+# take AWS access key set in vstart.sh
+access_key = ABCDEFGHIJKLMNOPQRST
+
+# take AWS secret key set in vstart.sh
+secret_key = abcdefghijklmnopqrstuvwxyzabcdefghijklmn
+
+[s3 main]
+
+# take user_idname set in vstart.sh
+user_id = 56789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234
+
+# take AWS access key set in vstart.sh
+access_key = NOPQRSTUVWXYZABCDEFG
+
+# take AWS secret key set in vstart.sh
+secret_key = nopqrstuvwxyzabcdefghijklmnabcdefghijklm
+
+
