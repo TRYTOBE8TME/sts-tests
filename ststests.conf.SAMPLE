@@ -19,6 +19,9 @@ bucket prefix = yournamehere-{random}-
 
 [sts]
 
+# main display_name set in vstart.sh
+display_name = M. Tester
+
 # take user_idname set in vstart.sh
 user_id = 56789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234
 
