@@ -15,11 +15,11 @@ config = munch.Munch
 def setup():
     cfg = configparser.RawConfigParser()
     try:
-        path = os.environ['S3TEST_CONF']
+        path = os.environ['STSTEST_CONF']
     except KeyError:
         raise RuntimeError(
             'To run tests, point environment '
-            + 'variable S3TEST_CONF to a config file.',
+            + 'variable STSTEST_CONF to a config file.',
             )
     cfg.read(path)
 
@@ -47,19 +47,19 @@ def setup():
     # vars from the main section
     config.sts_access_key = cfg.get('sts',"access_key")
     config.sts_secret_key = cfg.get('sts',"secret_key")
-    #config.sts_display_name = cfg.get('sts',"display_name")
+    config.sts_display_name = cfg.get('sts',"display_name")
     config.sts_user_id = cfg.get('sts',"user_id")
     #config.sts_email = cfg.get('sts',"email")
 
     config.iam_access_key = cfg.get('iam',"access_key")
     config.iam_secret_key = cfg.get('iam',"secret_key")
-    #config.iam_display_name = cfg.get('iam',"display_name")
+    config.iam_display_name = cfg.get('iam',"display_name")
     config.iam_user_id = cfg.get('iam',"user_id")
     #config.iam_email = cfg.get('iam',"email")
 
     config.s3_main_access_key = cfg.get('s3 main',"access_key")
     config.s3_main_secret_key = cfg.get('s3 main',"secret_key")
-    #config.s3_main_display_name = cfg.get('s3 main',"display_name")
+    config.s3_main_display_name = cfg.get('s3 main',"display_name")
     config.s3_main_user_id = cfg.get('s3 main',"user_id")
     #config.s3_main_email = cfg.get('s3 main',"email")
 
@@ -95,3 +95,4 @@ def get_s3_client(client_config=None):
                         endpoint_url=config.default_endpoint,
                         region_name='')
     return client
+
