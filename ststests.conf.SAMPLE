@@ -33,6 +33,9 @@ secret_key = nopqrstuvwxyzabcdefghijklmnabcdefghijklm
 
 [iam]
 
+#display_name set in vstart.sh
+display_name = abc
+
 # take user_idname set in vstart.sh
 user_id = 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
@@ -44,6 +47,9 @@ secret_key = abcdefghijklmnopqrstuvwxyzabcdefghijklmn
 
 [s3 main]
 
+#display_name set in vstart.sh
+display_name = xyz
+
 # take user_idname set in vstart.sh
 user_id = 56789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234
 
@@ -52,5 +58,3 @@ access_key = NOPQRSTUVWXYZABCDEFG
 
 # take AWS secret key set in vstart.sh
 secret_key = nopqrstuvwxyzabcdefghijklmnabcdefghijklm
-
-
