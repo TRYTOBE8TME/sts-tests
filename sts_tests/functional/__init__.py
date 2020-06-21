@@ -96,3 +96,5 @@ def get_s3_client(client_config=None):
                         region_name='')
     return client
 
+def sts_access_key():
+    return config.sts_access_key
