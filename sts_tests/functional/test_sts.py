@@ -34,7 +34,8 @@ from email.header import decode_header
 from . import(
     get_iam_client,
     get_sts_client,
-    get_s3_client
+    get_s3_client,
+    get_sts_access_key
     )
 
 def create_role(iam_client,path,rolename,policy_document,description,sessionduration,permissionboundary):
@@ -75,8 +76,9 @@ def test_get_session_token():
     s3bucket=""
     iam_client=get_iam_client()
     sts_client=get_sts_client()
+    sts_access_key=get_sts_access_key()
     user_policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Deny\",\"Action\":\"s3:*\",\"Resource\":[\"*\"],\"Condition\":{\"BoolIfExists\":{\"sts:authentication\":\"false\"}}},{\"Effect\":\"Allow\",\"Action\":\"sts:GetSessionToken\",\"Resource\":\"*\",\"Condition\":{\"BoolIfExists\":{\"sts:authentication\":\"false\"}}}]}"
-    (resp_err,resp)=put_user_policy(iam_client,'56789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234','Policy1',user_policy)
+    (resp_err,resp)=put_user_policy(iam_client,sts_access_key,'Policy1',user_policy)
     eq(resp['ResponseMetadata']['HTTPStatusCode'],200)
     response=sts_client.get_session_token(DurationSeconds=43200)
     eq(response['ResponseMetadata']['HTTPStatusCode'],200)
@@ -102,8 +104,9 @@ def test_get_session_token_permanent_creds_denied():
     s3bucket_error=None
     iam_client=get_iam_client()
     sts_client=get_sts_client()
+    sts_access_key=get_sts_access_key()
     user_policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Deny\",\"Action\":\"s3:*\",\"Resource\":[\"*\"],\"Condition\":{\"BoolIfExists\":{\"sts:authentication\":\"false\"}}},{\"Effect\":\"Allow\",\"Action\":\"sts:GetSessionToken\",\"Resource\":\"*\",\"Condition\":{\"BoolIfExists\":{\"sts:authentication\":\"false\"}}}]}"
-    (resp_err,resp)=put_user_policy(iam_client,'56789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234','Policy1',user_policy)
+    (resp_err,resp)=put_user_policy(iam_client,sts_access_key,'Policy1',user_policy)
     eq(resp['ResponseMetadata']['HTTPStatusCode'],200)
     response=sts_client.get_session_token(DurationSeconds=43200)
     eq(response['ResponseMetadata']['HTTPStatusCode'],200)
@@ -128,7 +131,8 @@ def test_assume_role_allow():
     string_data='Hello everyone out there'
     iam_client=get_iam_client()    
     sts_client=get_sts_client()
-    policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam:::user/56789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234\"]},\"Action\":[\"sts:AssumeRole\"]}]}"
+    sts_access_key=get_sts_access_key()
+    policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam:::user/{}\".sts_access_key]},\"Action\":[\"sts:AssumeRole\"]}]}"
     (role_error,role_response)=create_role(iam_client,'/','S192',policy_document,None,None,None)
     eq(role_response['Role']['Arn'],'arn:aws:iam:::role/S192')
     role_policy = "{\"Version\":\"2012-10-17\",\"Statement\":{\"Effect\":\"Allow\",\"Action\":\"s3:*\",\"Resource\":\"arn:aws:s3:::*\"}}"
@@ -165,9 +169,10 @@ def test_assume_role_deny():
     role_err=None
     resp=""
     s3bucket_error=None
-    iam_client=get_iam_client()    
+    iam_client=get_iam_client()
     sts_client=get_sts_client()
-    policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam:::user/56789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234\"]},\"Action\":[\"sts:AssumeRole\"]}]}"
+    sts_access_key=get_sts_access_key()
+    policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam:::user/{}\".sts_access_key]},\"Action\":[\"sts:AssumeRole\"]}]}"
     (role_error,role_response)=create_role(iam_client,'/','S193',policy_document,None,None,None)
     eq(role_response['Role']['Arn'],'arn:aws:iam:::role/S193')
     role_policy = "{\"Version\":\"2012-10-17\",\"Statement\":{\"Effect\":\"Deny\",\"Action\":\"s3:*\",\"Resource\":\"arn:aws:s3:::*\"}}"
@@ -188,4 +193,3 @@ def test_assume_role_deny():
     except ClientError as e:
         s3bucket_error = e.response.get("Error", {}).get("Code")
     eq(s3bucket_error,'AccessDenied')
-
