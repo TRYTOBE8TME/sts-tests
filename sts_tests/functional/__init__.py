@@ -96,5 +96,5 @@ def get_s3_client(client_config=None):
                         region_name='')
     return client
 
-def get_sts_access_key():
-    return config.sts_access_key
+def get_sts_user_id():
+    return config.sts_user_id
