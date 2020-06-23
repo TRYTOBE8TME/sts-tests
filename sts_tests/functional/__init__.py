@@ -73,6 +73,7 @@ def get_sts_client(client_config=None):
                         aws_access_key_id=config.sts_access_key,
                         aws_secret_access_key=config.sts_secret_key,
                         endpoint_url=config.default_endpoint,
+                        use_ssl=config.default_is_secure,
                         region_name='',
                         config=client_config)
     return client
@@ -84,6 +85,7 @@ def get_iam_client(client_config=None):
                         aws_access_key_id=config.iam_access_key,
                         aws_secret_access_key=config.iam_secret_key,
                         endpoint_url=config.default_endpoint,
+                        use_ssl=config.default_is_secure,
                         region_name='',
                         config=client_config)
     return client
@@ -95,6 +97,7 @@ def get_s3_client(client_config=None):
                         aws_access_key_id=config.s3_main_access_key,
                         aws_secret_access_key=config.s3_main_secret_key,
                         endpoint_url=config.default_endpoint,
+                        use_ssl=config.default_is_secure,
                         region_name='',
                         config=client_config)
     return client
