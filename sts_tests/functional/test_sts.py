@@ -70,7 +70,7 @@ def put_user_policy(iam_client,username,policyname,policy_document):
 @attr(operation='check')
 @attr(assertion='s3 ops only accessible by temporary credentials')
 def test_get_session_token():
-    response=""
+    respons=""
     resp=""
     resp_err=None
     s3bucket=""
@@ -80,8 +80,8 @@ def test_get_session_token():
     user_policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Deny\",\"Action\":\"s3:*\",\"Resource\":[\"*\"],\"Condition\":{\"BoolIfExists\":{\"sts:authentication\":\"false\"}}},{\"Effect\":\"Allow\",\"Action\":\"sts:GetSessionToken\",\"Resource\":\"*\",\"Condition\":{\"BoolIfExists\":{\"sts:authentication\":\"false\"}}}]}"
     (resp_err,resp)=put_user_policy(iam_client,sts_user_id,'Policy1',user_policy)
     eq(resp['ResponseMetadata']['HTTPStatusCode'],200)
-    response=sts_client.get_session_token(DurationSeconds=43200)
-    eq(response['ResponseMetadata']['HTTPStatusCode'],200)
+    respons=sts_client.get_session_token(DurationSeconds=43200)
+    eq(respons['ResponseMetadata']['HTTPStatusCode'],200)
     s3_client=boto3.client('s3',
                 aws_access_key_id = response['Credentials']['AccessKeyId'],
 		aws_secret_access_key = response['Credentials']['SecretAccessKey'],
