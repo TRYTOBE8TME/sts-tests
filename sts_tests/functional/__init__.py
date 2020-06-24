@@ -104,3 +104,6 @@ def get_s3_client(client_config=None):
 
 def get_sts_user_id():
     return config.sts_user_id
+
+def get_default_endpoint():
+    return config.default_endpoint
