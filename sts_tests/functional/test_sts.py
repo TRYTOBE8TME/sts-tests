@@ -35,7 +35,8 @@ from . import(
     get_iam_client,
     get_sts_client,
     get_s3_client,
-    get_sts_user_id
+    get_sts_user_id,
+    get_default_endpoint
     )
 
 def create_role(iam_client,path,rolename,policy_document,description,sessionduration,permissionboundary):
@@ -77,6 +78,7 @@ def test_get_session_token():
     iam_client=get_iam_client()
     sts_client=get_sts_client()
     sts_user_id=get_sts_user_id()
+    default_endpoint=get_default_endpoint()
     user_policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Deny\",\"Action\":\"s3:*\",\"Resource\":[\"*\"],\"Condition\":{\"BoolIfExists\":{\"sts:authentication\":\"false\"}}},{\"Effect\":\"Allow\",\"Action\":\"sts:GetSessionToken\",\"Resource\":\"*\",\"Condition\":{\"BoolIfExists\":{\"sts:authentication\":\"false\"}}}]}"
     (resp_err,resp)=put_user_policy(iam_client,sts_user_id,'Policy1',user_policy)
     eq(resp['ResponseMetadata']['HTTPStatusCode'],200)
@@ -86,7 +88,7 @@ def test_get_session_token():
                 aws_access_key_id = response['Credentials']['AccessKeyId'],
 		aws_secret_access_key = response['Credentials']['SecretAccessKey'],
                 aws_session_token = response['Credentials']['SessionToken'],
-		endpoint_url='http://s3.us-east.localhost:8000',
+		endpoint_url=default_endpoint,
 		region_name='',
 		)
     bucket_name = 'my-bucket'
