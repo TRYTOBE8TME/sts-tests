@@ -113,7 +113,7 @@ def test_get_session_token_permanent_creds_denied():
     response=sts_client.get_session_token(DurationSeconds=43200)
     eq(response['ResponseMetadata']['HTTPStatusCode'],200)
     s3_client=get_s3_client()
-    bucket_name = 'my-bucket'
+    bucket_name = 'my-bucke'
     try:
         s3bucket = s3_client.create_bucket(Bucket=bucket_name)
     except ClientError as e:
@@ -134,6 +134,7 @@ def test_assume_role_allow():
     iam_client=get_iam_client()    
     sts_client=get_sts_client()
     sts_user_id=get_sts_user_id()
+    default_endpoint=get_default_endpoint()
     policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam:::user/{}\".sts_user_id]},\"Action\":[\"sts:AssumeRole\"]}]}"
     (role_error,role_response)=create_role(iam_client,'/','S192',policy_document,None,None,None)
     eq(role_response['Role']['Arn'],'arn:aws:iam:::role/S192')
@@ -146,16 +147,16 @@ def test_assume_role_allow():
 		aws_access_key_id = resp['Credentials']['AccessKeyId'],
 		aws_secret_access_key = resp['Credentials']['SecretAccessKey'],
 		aws_session_token = resp['Credentials']['SessionToken'],
-		endpoint_url='http://s3.us-east.localhost:8000',
+		endpoint_url=default_endpoint,
 		region_name='',
 		)
-    bucket_name = 'my-bucket'
+    bucket_name = 'my-buck'
     s3bucket = s3_client.create_bucket(Bucket=bucket_name)
     eq(s3bucket['ResponseMetadata']['HTTPStatusCode'],200)
     s3_client.put_object(Body=string_data,Bucket=bucket_name,Key='obj1')
-    obje = s3_client.get_object(Bucket='my-bucket',Key='obj1')
+    obje = s3_client.get_object(Bucket='my-buck',Key='obj1')
     eq(obje['ResponseMetadata']['HTTPStatusCode'],200)
-    obj = s3_client.delete_object(Bucket='my-bucket',Key='obj1')
+    obj = s3_client.delete_object(Bucket='my-buck',Key='obj1')
     eq(obj['ResponseMetadata']['HTTPStatusCode'],204)
     bkt = s3_client.delete_bucket(Bucket=bucket_name)
     eq(bkt['ResponseMetadata']['HTTPStatusCode'],204)
@@ -174,6 +175,7 @@ def test_assume_role_deny():
     iam_client=get_iam_client()
     sts_client=get_sts_client()
     sts_user_id=get_sts_user_id()
+    default_endpoint=get_default_endpoint()
     policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam:::user/{}\".sts_user_id]},\"Action\":[\"sts:AssumeRole\"]}]}"
     (role_error,role_response)=create_role(iam_client,'/','S193',policy_document,None,None,None)
     eq(role_response['Role']['Arn'],'arn:aws:iam:::role/S193')
@@ -186,10 +188,10 @@ def test_assume_role_deny():
 		aws_access_key_id = resp['Credentials']['AccessKeyId'],
 		aws_secret_access_key = resp['Credentials']['SecretAccessKey'],
 		aws_session_token = resp['Credentials']['SessionToken'],
-		endpoint_url='http://s3.us-east.localhost:8000',
+		endpoint_url=default_endpoint,
 		region_name='',
 		)
-    bucket_name = 'my-bucket'
+    bucket_name = 'my-buc'
     try:
         s3bucket = s3_client.create_bucket(Bucket=bucket_name)
     except ClientError as e:
