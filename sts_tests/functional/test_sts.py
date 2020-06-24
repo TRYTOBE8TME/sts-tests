@@ -94,6 +94,7 @@ def test_get_session_token():
     bucket_name = 'my-bucket'
     s3bucket = s3_client.create_bucket(Bucket=bucket_name)
     eq(s3bucket['ResponseMetadata']['HTTPStatusCode'],200)
+    finish = s3_client.delete_bucket(Bucket=bucket_name)
 
 @attr(resource='get session token')
 @attr(method='get')
@@ -135,7 +136,7 @@ def test_assume_role_allow():
     sts_client=get_sts_client()
     sts_user_id=get_sts_user_id()
     default_endpoint=get_default_endpoint()
-    policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam:::user/{user_id}\".format(user_id=sts_user_id)]},\"Action\":[\"sts:AssumeRole\"]}]}"
+    policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam:::user/"+sts_user_id+"\"]},\"Action\":[\"sts:AssumeRole\"]}]}"    
     (role_error,role_response)=create_role(iam_client,'/','S192',policy_document,None,None,None)
     eq(role_response['Role']['Arn'],'arn:aws:iam:::role/S192')
     role_policy = "{\"Version\":\"2012-10-17\",\"Statement\":{\"Effect\":\"Allow\",\"Action\":\"s3:*\",\"Resource\":\"arn:aws:s3:::*\"}}"
@@ -176,7 +177,7 @@ def test_assume_role_deny():
     sts_client=get_sts_client()
     sts_user_id=get_sts_user_id()
     default_endpoint=get_default_endpoint()
-    policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam:::user/{user_id}\".format(user_id=sts_user_id)]},\"Action\":[\"sts:AssumeRole\"]}]}"
+    policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam:::user/"+sts_user_id+"\"]},\"Action\":[\"sts:AssumeRole\"]}]}"    
     (role_error,role_response)=create_role(iam_client,'/','S193',policy_document,None,None,None)
     eq(role_response['Role']['Arn'],'arn:aws:iam:::role/S193')
     role_policy = "{\"Version\":\"2012-10-17\",\"Statement\":{\"Effect\":\"Deny\",\"Action\":\"s3:*\",\"Resource\":\"arn:aws:s3:::*\"}}"
