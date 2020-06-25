@@ -137,10 +137,10 @@ def test_assume_role_allow():
     sts_user_id=get_sts_user_id()
     default_endpoint=get_default_endpoint()
     policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam:::user/"+sts_user_id+"\"]},\"Action\":[\"sts:AssumeRole\"]}]}"    
-    (role_error,role_response)=create_role(iam_client,'/','S192',policy_document,None,None,None)
-    eq(role_response['Role']['Arn'],'arn:aws:iam:::role/S192')
+    (role_error,role_response)=create_role(iam_client,'/','S201',policy_document,None,None,None)
+    eq(role_response['Role']['Arn'],'arn:aws:iam:::role/S201')
     role_policy = "{\"Version\":\"2012-10-17\",\"Statement\":{\"Effect\":\"Allow\",\"Action\":\"s3:*\",\"Resource\":\"arn:aws:s3:::*\"}}"
-    (role_err,response)=put_role_policy(iam_client,'S192','Policy1',role_policy)
+    (role_err,response)=put_role_policy(iam_client,'S201','Policy1',role_policy)
     eq(response['ResponseMetadata']['HTTPStatusCode'],200)
     resp=sts_client.assume_role(RoleArn=role_response['Role']['Arn'],RoleSessionName='Bob')
     eq(resp['ResponseMetadata']['HTTPStatusCode'],200)
@@ -178,10 +178,10 @@ def test_assume_role_deny():
     sts_user_id=get_sts_user_id()
     default_endpoint=get_default_endpoint()
     policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam:::user/"+sts_user_id+"\"]},\"Action\":[\"sts:AssumeRole\"]}]}"    
-    (role_error,role_response)=create_role(iam_client,'/','S193',policy_document,None,None,None)
-    eq(role_response['Role']['Arn'],'arn:aws:iam:::role/S193')
+    (role_error,role_response)=create_role(iam_client,'/','S202',policy_document,None,None,None)
+    eq(role_response['Role']['Arn'],'arn:aws:iam:::role/S202')
     role_policy = "{\"Version\":\"2012-10-17\",\"Statement\":{\"Effect\":\"Deny\",\"Action\":\"s3:*\",\"Resource\":\"arn:aws:s3:::*\"}}"
-    (role_err,response)=put_role_policy(iam_client,'S193','Policy1',role_policy)
+    (role_err,response)=put_role_policy(iam_client,'S202','Policy1',role_policy)
     eq(response['ResponseMetadata']['HTTPStatusCode'],200)
     resp=sts_client.assume_role(RoleArn=role_response['Role']['Arn'],RoleSessionName='Bob')
     eq(resp['ResponseMetadata']['HTTPStatusCode'],200)
