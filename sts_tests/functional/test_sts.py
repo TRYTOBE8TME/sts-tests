@@ -215,3 +215,41 @@ def test_assume_role_deny():
     except ClientError as e:
         s3bucket_error = e.response.get("Error", {}).get("Code")
     eq(s3bucket_error,'AccessDenied')
+
+@attr(resource='assume role')
+@attr(method='get')
+@attr(operation='check')
+@attr(assertion='creds expire so all s3 ops fails')
+def test_assume_role_creds_expiry():
+    role_response=""
+    role_error=None
+    response=""
+    role_err=None
+    resp=""
+    iam_client=get_iam_client()    
+    sts_client=get_sts_client()
+    sts_user_id=get_sts_user_id()
+    default_endpoint=get_default_endpoint()
+    role_session_name=get_role_session_name()
+    policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam:::user/"+sts_user_id+"\"]},\"Action\":[\"sts:AssumeRole\"]}]}"
+    (role_error,role_response,general_role_name)=create_role(iam_client,'/',None,policy_document,None,None,None)
+    eq(role_response['Role']['Arn'],'arn:aws:iam:::role/'+general_role_name+'')
+    role_policy = "{\"Version\":\"2012-10-17\",\"Statement\":{\"Effect\":\"Allow\",\"Action\":\"s3:*\",\"Resource\":\"arn:aws:s3:::*\"}}"
+    (role_err,response)=put_role_policy(iam_client,general_role_name,None,role_policy)
+    eq(response['ResponseMetadata']['HTTPStatusCode'],200)
+    resp=sts_client.assume_role(RoleArn=role_response['Role']['Arn'],RoleSessionName=role_session_name,DurationSeconds=900)
+    eq(resp['ResponseMetadata']['HTTPStatusCode'],200)
+    time.sleep(900)
+    s3_client = boto3.client('s3',
+		aws_access_key_id = resp['Credentials']['AccessKeyId'],
+		aws_secret_access_key = resp['Credentials']['SecretAccessKey'],
+		aws_session_token = resp['Credentials']['SessionToken'],
+		endpoint_url=default_endpoint,
+		region_name='',
+		)
+    bucket_name = get_bucket_name()
+    try:
+        s3bucket = s3_client.create_bucket(Bucket=bucket_name)
+    except ClientError as e:
+        s3bucket_error = e.response.get("Error", {}).get("Code")
+    eq(s3bucket_error,'AccessDenied')
