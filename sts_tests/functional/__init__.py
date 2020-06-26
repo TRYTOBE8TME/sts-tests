@@ -102,8 +102,66 @@ def get_s3_client(client_config=None):
                         config=client_config)
     return client
 
+def get_bucket_name(bucket_name=None):
+    if bucket_name is None:
+        rand = ''.join(
+        random.choice(string.ascii_lowercase + string.digits)
+        for c in range(255)
+        )
+        while rand:
+                bucket_name = '{random}'.format(random=rand)
+                if len(bucket_name) <= 10:
+            	        return bucket_name
+                rand = rand[:-1]
+    return bucket_name
+
+def get_policy_name(policy_name=None):
+    if policy_name is None:
+        rand = ''.join(
+        random.choice(string.ascii_lowercase + string.digits)
+        for c in range(255)
+        )
+        while rand:
+                policy_name = '{random}'.format(random=rand)
+                if len(policy_name) <= 10:
+            	        return policy_name
+                rand = rand[:-1]
+    return policy_name
+
+def get_role_name(role_name=None):
+    if role_name is None:
+        rand = ''.join(
+        random.choice(string.ascii_lowercase + string.digits)
+        for c in range(255)
+        )
+        while rand:
+                role_name = '{random}'.format(random=rand)
+                if len(role_name) <= 10:
+            	        return role_name
+                rand = rand[:-1]
+    return role_name
+
+def get_role_session_name(role_session_name=None):
+    if role_session_name is None:
+        rand = ''.join(
+        random.choice(string.ascii_lowercase + string.digits)
+        for c in range(255)
+        )
+        while rand:
+                role_session_name = '{random}'.format(random=rand)
+                if len(role_session_name) <= 10:
+            	        return role_session_name
+                rand = rand[:-1]
+    return role_session_name
+
 def get_sts_user_id():
     return config.sts_user_id
 
 def get_default_endpoint():
     return config.default_endpoint
+
+def get_s3_main_access_key():
+    return config.s3_main_access_key
+
+def get_s3_main_secret_key():
+    return config.s3_main_secret_key
