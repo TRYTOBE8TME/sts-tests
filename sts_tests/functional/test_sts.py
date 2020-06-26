@@ -36,21 +36,31 @@ from . import(
     get_sts_client,
     get_s3_client,
     get_sts_user_id,
-    get_default_endpoint
+    get_default_endpoint,
+    get_bucket_name,
+    get_policy_name,
+    get_role_name,
+    get_s3_main_access_key,
+    get_s3_main_secret_key,
+    get_role_session_name
     )
 
 def create_role(iam_client,path,rolename,policy_document,description,sessionduration,permissionboundary):
     role_response=""
     role_err=None
+    if rolename is None:
+        rolename=get_role_name()
     try:
     	role_response = iam_client.create_role(Path=path,RoleName=rolename,AssumeRolePolicyDocument=policy_document,)
     except ClientError as e:
     	role_err = e.response['Code']
-    return (role_err,role_response)
+    return (role_err,role_response,rolename)
 
 def put_role_policy(iam_client,rolename,policyname,role_policy):
     role_response=""
     role_err=None
+    if policyname is None:
+        policyname=get_policy_name()
     try:
         role_response = iam_client.put_role_policy(RoleName=rolename,PolicyName=policyname,PolicyDocument=role_policy)
     except ClientError as e:
@@ -60,6 +70,8 @@ def put_role_policy(iam_client,rolename,policyname,role_policy):
 def put_user_policy(iam_client,username,policyname,policy_document):
     role_response=""
     role_err=None
+    if policyname is None:
+        policyname=get_policy_name()
     try:
         role_response = iam_client.put_user_policy(UserName=username,PolicyName=policyname,PolicyDocument=policy_document)
     except ClientError as e:
@@ -80,7 +92,7 @@ def test_get_session_token():
     sts_user_id=get_sts_user_id()
     default_endpoint=get_default_endpoint()
     user_policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Deny\",\"Action\":\"s3:*\",\"Resource\":[\"*\"],\"Condition\":{\"BoolIfExists\":{\"sts:authentication\":\"false\"}}},{\"Effect\":\"Allow\",\"Action\":\"sts:GetSessionToken\",\"Resource\":\"*\",\"Condition\":{\"BoolIfExists\":{\"sts:authentication\":\"false\"}}}]}"
-    (resp_err,resp)=put_user_policy(iam_client,sts_user_id,'Policy1',user_policy)
+    (resp_err,resp)=put_user_policy(iam_client,sts_user_id,None,user_policy)
     eq(resp['ResponseMetadata']['HTTPStatusCode'],200)
     response=sts_client.get_session_token(DurationSeconds=43200)
     eq(response['ResponseMetadata']['HTTPStatusCode'],200)
@@ -91,7 +103,7 @@ def test_get_session_token():
 		endpoint_url=default_endpoint,
 		region_name='',
 		)
-    bucket_name = 'my-bucket'
+    bucket_name = get_bucket_name()
     s3bucket = s3_client.create_bucket(Bucket=bucket_name)
     eq(s3bucket['ResponseMetadata']['HTTPStatusCode'],200)
     finish = s3_client.delete_bucket(Bucket=bucket_name)
@@ -108,13 +120,21 @@ def test_get_session_token_permanent_creds_denied():
     iam_client=get_iam_client()
     sts_client=get_sts_client()
     sts_user_id=get_sts_user_id()
+    s3_main_access_key=get_s3_main_access_key()
+    s3_main_secret_key=get_s3_main_secret_key()
     user_policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Deny\",\"Action\":\"s3:*\",\"Resource\":[\"*\"],\"Condition\":{\"BoolIfExists\":{\"sts:authentication\":\"false\"}}},{\"Effect\":\"Allow\",\"Action\":\"sts:GetSessionToken\",\"Resource\":\"*\",\"Condition\":{\"BoolIfExists\":{\"sts:authentication\":\"false\"}}}]}"
-    (resp_err,resp)=put_user_policy(iam_client,sts_user_id,'Policy1',user_policy)
+    (resp_err,resp)=put_user_policy(iam_client,sts_user_id,None,user_policy)
     eq(resp['ResponseMetadata']['HTTPStatusCode'],200)
     response=sts_client.get_session_token(DurationSeconds=43200)
     eq(response['ResponseMetadata']['HTTPStatusCode'],200)
-    s3_client=get_s3_client()
-    bucket_name = 'my-bucket'
+    s3_client=boto3.client('s3',
+                aws_access_key_id = s3_main_access_key,
+		aws_secret_access_key = s3_main_secret_key,
+                aws_session_token = response['Credentials']['SessionToken'],
+		endpoint_url=default_endpoint,
+		region_name='',
+		)
+    bucket_name = get_bucket_name()
     try:
         s3bucket = s3_client.create_bucket(Bucket=bucket_name)
     except ClientError as e:
@@ -131,18 +151,18 @@ def test_assume_role_allow():
     response=""
     role_err=None
     resp=""
-    string_data='Hello everyone out there'
     iam_client=get_iam_client()    
     sts_client=get_sts_client()
     sts_user_id=get_sts_user_id()
     default_endpoint=get_default_endpoint()
+    role_session_name=get_role_session_name()
     policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam:::user/"+sts_user_id+"\"]},\"Action\":[\"sts:AssumeRole\"]}]}"    
-    (role_error,role_response)=create_role(iam_client,'/','S201',policy_document,None,None,None)
-    eq(role_response['Role']['Arn'],'arn:aws:iam:::role/S201')
+    (role_error,role_response,general_role_name)=create_role(iam_client,'/',None,policy_document,None,None,None)
+    eq(role_response['Role']['Arn'],'arn:aws:iam:::role/'+general_role_name+'')
     role_policy = "{\"Version\":\"2012-10-17\",\"Statement\":{\"Effect\":\"Allow\",\"Action\":\"s3:*\",\"Resource\":\"arn:aws:s3:::*\"}}"
-    (role_err,response)=put_role_policy(iam_client,'S201','Policy1',role_policy)
+    (role_err,response)=put_role_policy(iam_client,general_role_name,None,role_policy)
     eq(response['ResponseMetadata']['HTTPStatusCode'],200)
-    resp=sts_client.assume_role(RoleArn=role_response['Role']['Arn'],RoleSessionName='Bob')
+    resp=sts_client.assume_role(RoleArn=role_response['Role']['Arn'],RoleSessionName=role_session_name)
     eq(resp['ResponseMetadata']['HTTPStatusCode'],200)
     s3_client = boto3.client('s3',
 		aws_access_key_id = resp['Credentials']['AccessKeyId'],
@@ -151,14 +171,9 @@ def test_assume_role_allow():
 		endpoint_url=default_endpoint,
 		region_name='',
 		)
-    bucket_name = 'my-bucket'
+    bucket_name = get_bucket_name()
     s3bucket = s3_client.create_bucket(Bucket=bucket_name)
     eq(s3bucket['ResponseMetadata']['HTTPStatusCode'],200)
-    s3_client.put_object(Body=string_data,Bucket=bucket_name,Key='obj1')
-    obje = s3_client.get_object(Bucket='my-bucket',Key='obj1')
-    eq(obje['ResponseMetadata']['HTTPStatusCode'],200)
-    obj = s3_client.delete_object(Bucket='my-bucket',Key='obj1')
-    eq(obj['ResponseMetadata']['HTTPStatusCode'],204)
     bkt = s3_client.delete_bucket(Bucket=bucket_name)
     eq(bkt['ResponseMetadata']['HTTPStatusCode'],204)
 
@@ -177,13 +192,14 @@ def test_assume_role_deny():
     sts_client=get_sts_client()
     sts_user_id=get_sts_user_id()
     default_endpoint=get_default_endpoint()
+    role_session_name=get_role_session_name()
     policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"arn:aws:iam:::user/"+sts_user_id+"\"]},\"Action\":[\"sts:AssumeRole\"]}]}"    
-    (role_error,role_response)=create_role(iam_client,'/','S202',policy_document,None,None,None)
-    eq(role_response['Role']['Arn'],'arn:aws:iam:::role/S202')
+    (role_error,role_response,general_role_name)=create_role(iam_client,'/',None,policy_document,None,None,None)
+    eq(role_response['Role']['Arn'],'arn:aws:iam:::role/'+general_role_name+'')
     role_policy = "{\"Version\":\"2012-10-17\",\"Statement\":{\"Effect\":\"Deny\",\"Action\":\"s3:*\",\"Resource\":\"arn:aws:s3:::*\"}}"
-    (role_err,response)=put_role_policy(iam_client,'S202','Policy1',role_policy)
+    (role_err,response)=put_role_policy(iam_client,general_role_name,None,role_policy)
     eq(response['ResponseMetadata']['HTTPStatusCode'],200)
-    resp=sts_client.assume_role(RoleArn=role_response['Role']['Arn'],RoleSessionName='Bob')
+    resp=sts_client.assume_role(RoleArn=role_response['Role']['Arn'],RoleSessionName=role_session_name)
     eq(resp['ResponseMetadata']['HTTPStatusCode'],200)
     s3_client = boto3.client('s3',
 		aws_access_key_id = resp['Credentials']['AccessKeyId'],
@@ -192,7 +208,7 @@ def test_assume_role_deny():
 		endpoint_url=default_endpoint,
 		region_name='',
 		)
-    bucket_name = 'my-bucket'
+    bucket_name = get_bucket_name()
     try:
         s3bucket = s3_client.create_bucket(Bucket=bucket_name)
     except ClientError as e:
