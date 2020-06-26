@@ -120,6 +120,7 @@ def test_get_session_token_permanent_creds_denied():
     iam_client=get_iam_client()
     sts_client=get_sts_client()
     sts_user_id=get_sts_user_id()
+    default_endpoint=get_default_endpoint()
     s3_main_access_key=get_s3_main_access_key()
     s3_main_secret_key=get_s3_main_secret_key()
     user_policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Deny\",\"Action\":\"s3:*\",\"Resource\":[\"*\"],\"Condition\":{\"BoolIfExists\":{\"sts:authentication\":\"false\"}}},{\"Effect\":\"Allow\",\"Action\":\"sts:GetSessionToken\",\"Resource\":\"*\",\"Condition\":{\"BoolIfExists\":{\"sts:authentication\":\"false\"}}}]}"
