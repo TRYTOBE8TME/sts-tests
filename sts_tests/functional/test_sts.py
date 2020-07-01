@@ -86,7 +86,6 @@ def test_get_session_token():
     respons=""
     resp=""
     resp_err=None
-    s3bucket=""
     iam_client=get_iam_client()
     sts_client=get_sts_client()
     sts_user_id=get_sts_user_id()
@@ -106,7 +105,8 @@ def test_get_session_token():
     bucket_name = get_bucket_name()
     s3bucket = s3_client.create_bucket(Bucket=bucket_name)
     eq(s3bucket['ResponseMetadata']['HTTPStatusCode'],200)
-    finish = s3_client.delete_bucket(Bucket=bucket_name)
+    bkt = s3_client.delete_bucket(Bucket=bucket_name)
+    eq(bkt['ResponseMetadata']['HTTPStatusCode'],204)
 
 @attr(resource='get session token')
 @attr(method='get')
