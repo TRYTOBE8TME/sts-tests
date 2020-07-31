@@ -31,6 +31,8 @@ def setup():
         raise RuntimeError('Your config file is missing the "iam" section!')
     if not cfg.has_section("s3 main"):
         raise RuntimeError('Your config file is missing the "s3 main" section!')
+    if not cfg.has_section("webidentity"):
+        raise RuntimeError('Your config file is missing the "webidentity" section!')
 
     global prefix
 
@@ -62,6 +64,12 @@ def setup():
     config.s3_main_display_name = cfg.get('s3 main',"display_name")
     config.s3_main_user_id = cfg.get('s3 main',"user_id")
     #config.s3_main_email = cfg.get('s3 main',"email")
+
+    config.webidentity_thumbprint = cfg.get('webidentity', "thumbprint")
+    config.webidentity_aud = cfg.get('webidentity', "aud")
+    config.webidentity_token = cfg.get('webidentity', "token")
+    config.webidentity_realm = cfg.get('webidentity', "KC_REALM")
+    config.webidentity_client = cfg.get('webidentity', "KC_CLIENT")
 
 def teardown():
     pass
@@ -165,3 +173,18 @@ def get_s3_main_access_key():
 
 def get_s3_main_secret_key():
     return config.s3_main_secret_key
+
+def get_thumbprint():
+    return config.webidentity_thumbprint
+
+def get_aud():
+    return config.webidentity_aud
+
+def get_token():
+    return config.webidentity_token
+
+def get_realm_name():
+    return config.webidentity_realm
+
+def get_client_name()
+    return config.webidentity_client
