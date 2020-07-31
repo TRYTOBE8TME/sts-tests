@@ -186,5 +186,5 @@ def get_token():
 def get_realm_name():
     return config.webidentity_realm
 
-def get_client_name()
+def get_client_name():
     return config.webidentity_client
