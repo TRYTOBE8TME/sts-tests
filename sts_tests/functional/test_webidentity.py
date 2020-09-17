@@ -93,12 +93,12 @@ def test_assume_role_with_web_identity():
     )
     '''
     oidc_response = iam_client.create_open_id_connect_provider(
-    Url='http://localhost:8081/auth/realms/{}'.format(realm),
+    Url='http://localhost:8080/auth/realms/{}'.format(realm),
     ThumbprintList=[
         thumbprint,
     ],
     )
-    policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Federated\":[\""+oidc_response["OpenIDConnectProviderArn"]+"\"]},\"Action\":[\"sts:AssumeRoleWithWebIdentity\"],\"Condition\":{\"StringEquals\":{\"localhost:8081/auth/realms/"+realm+":app_id\":\""+aud+"\"}}}]}"
+    policy_document = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Federated\":[\""+oidc_response["OpenIDConnectProviderArn"]+"\"]},\"Action\":[\"sts:AssumeRoleWithWebIdentity\"],\"Condition\":{\"StringEquals\":{\"localhost:8080/auth/realms/"+realm+":app_id\":\""+aud+"\"}}}]}"
     (role_error,role_response,general_role_name)=create_role(iam_client,'/',None,policy_document,None,None,None)
     eq(role_response['Role']['Arn'],'arn:aws:iam:::role/'+general_role_name+'')
     role_policy = "{\"Version\":\"2012-10-17\",\"Statement\":{\"Effect\":\"Allow\",\"Action\":\"s3:*\",\"Resource\":\"arn:aws:s3:::*\"}}"
